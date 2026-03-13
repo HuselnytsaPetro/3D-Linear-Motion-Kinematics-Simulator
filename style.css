@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #91ed9f;
+  font-family: 'Segoe UI', sans-serif;
+  color: #E6EDF3;
+  overflow: hidden; 
+}
+
+#three-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#controls-panel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 240px;
+  background: rgba(13, 17, 23, 0.92);
+  border: 1px solid #30363D;
+  border-radius: 12px;
+  padding: 16px;
+  padding-bottom: 2px;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+#controls-panel h3 {
+  font-size: 14px;
+  color: #97c457;
+  margin-bottom: 12px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  color: #97c457;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+input[type="number"],
+input[type="color"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #156630;
+  border: none;
+  border-radius: 6px;
+  color: #E6EDF3;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.5s ease;
+}
+
+input[type="number"]:focus {
+  border-color: #58A6FF;
+  box-shadow: 0 0 8px rgba(255, 247, 3, 0.806);
+}
+
+input[type="color"] {
+  height: 32px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.85; }
+
+#btn-start {
+  margin-top: 36px;
+  background: #1100ff;
+  color: #fff;
+}
+
+#btn-reset {
+  background: #ff1500;
+  color: #E6EDF3;
+  border: 1px solid #30363D;
+}
+
+#error-msg {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #F85149;
+  min-height: 16px;
+  text-align: center;
+}
+
+#info-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(13, 17, 23, 0.92);
+  border: 1px solid #30363D;
+  border-radius: 12px;
+  padding: 14px 18px;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  min-width: 180px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #21262D;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label {
+  color: #97c457;
+  font-weight: 600;
+  min-width: 40px;
+  font-style: italic;
+}
+
