@@ -8,7 +8,7 @@ body {
   background: #91ed9f;
   font-family: 'Segoe UI', sans-serif;
   color: #E6EDF3;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 #three-canvas {
@@ -20,26 +20,37 @@ body {
   display: block;
 }
 
+/* ── Панель параметрів ──────────────────────────── */
 #controls-panel {
   position: fixed;
   top: 20px;
   left: 20px;
-  width: 240px;
+  width: 250px;
   background: rgba(13, 17, 23, 0.92);
   border: 1px solid #30363D;
   border-radius: 12px;
   padding: 16px;
-  padding-bottom: 2px;
+  padding-bottom: 8px;
   z-index: 10;
   backdrop-filter: blur(8px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 #controls-panel h3 {
   font-size: 14px;
   color: #97c457;
-  margin-bottom: 12px;
+  margin-bottom: 2px;
   text-align: center;
   letter-spacing: 0.5px;
+}
+
+.panel-subtitle {
+  font-size: 10px;
+  color: #58a456;
+  text-align: center;
+  margin-bottom: 10px;
+  font-style: italic;
 }
 
 label {
@@ -76,7 +87,7 @@ input[type="color"] {
 
 button {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 8px;
   border: none;
   border-radius: 6px;
@@ -86,11 +97,19 @@ button {
   transition: opacity 0.2s;
 }
 
-button:hover { opacity: 0.85; }
+button:hover {
+  opacity: 0.85;
+}
 
 #btn-start {
-  margin-top: 36px;
+  margin-top: 14px;
   background: #1100ff;
+  color: #fff;
+}
+
+/* Нова кнопка "Очистити сцену" — жовтогаряча */
+#btn-clear {
+  background: #e08800;
   color: #fff;
 }
 
@@ -102,12 +121,38 @@ button:hover { opacity: 0.85; }
 
 #error-msg {
   margin-top: 8px;
+  margin-bottom: 4px;
   font-size: 11px;
   color: #F85149;
   min-height: 16px;
   text-align: center;
 }
 
+/* ── Аналітична панель ────────────────────────── */
+#analytics-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(13, 17, 23, 0.92);
+  border: 1px solid #30363D;
+  border-radius: 12px;
+  padding: 14px 18px;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  min-width: 190px;
+}
+
+.analytics-title {
+  font-size: 11px;
+  color: #97c457;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* ── Інфо-панель реального часу ──────────────── */
 #info-panel {
   position: fixed;
   bottom: 20px;
@@ -118,7 +163,7 @@ button:hover { opacity: 0.85; }
   padding: 14px 18px;
   z-index: 10;
   backdrop-filter: blur(8px);
-  min-width: 180px;
+  min-width: 190px;
 }
 
 .info-row {
@@ -130,12 +175,22 @@ button:hover { opacity: 0.85; }
   border-bottom: 1px solid #21262D;
 }
 
-.info-row:last-child { border-bottom: none; }
+.info-row:last-child {
+  border-bottom: none;
+}
 
 .info-label {
   color: #97c457;
   font-weight: 600;
-  min-width: 40px;
+  min-width: 46px;
   font-style: italic;
+  cursor: default;
 }
 
+/* ── Tooltip (hover на траєкторії) ─────────────
+   Стилі задані inline у renderer.js для
+   незалежності від завантаження CSS,
+   але тут можна перевизначити. */
+#trajectory-tooltip {
+  font-family: 'Segoe UI', sans-serif;
+}

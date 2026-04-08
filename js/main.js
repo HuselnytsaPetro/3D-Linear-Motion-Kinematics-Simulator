@@ -1,24 +1,32 @@
 /**
  * main.js
- * Точка входу: оголошення глобальних змінних,
- * координація модулів, обробники onStart і onReset
+ * Точка входу: координація модулів, обробники onStart, onReset, onClearScene.
+ *
+ * Зміни відносно попередньої версії (Лаб 2.1):
+ *  - onStart() більше НЕ викликає resetScene() перед кожним запуском —
+ *    кожна нова симуляція накопичується на сцені поверх попередніх.
+ *  - Додано обробник onClearScene() для кнопки "Очистити сцену",
+ *    яка викликає clearAllTrajectories() з renderer.js.
+ *  - Після обчислення траєкторії викликається updateAnalyticsPanel()
+ *    з аналітичними показниками H, R, T_flight.
+ *  - updateInfoPanel отримує { vy } з точок нового computeTrajectory3D.
  */
 
 // ── Оголошення глобальних змінних ────────────────────────────
 let scene, camera, renderer, controls
 let trajectoryLine = null
-let markerSphere   = null
-let animationId    = null
-let currentIndex   = 0
-let pointsArray    = []
+let markerSphere = null
+let animationId = null
+let currentIndex = 0
+let pointsArray = []
 
 // ── Ініціалізація при завантаженні сторінки ──────────────────
 window.addEventListener('load', () => {
-  initScene()    // renderer.js — створення сцени, камери, рендерера, controls
-  addAxes()      // renderer.js — осі X(червона) Y(зелена) Z(синя) + сітка
-  bindControls() // ui.js      — прив'язка подій до форми + localStorage
+  initScene()    // renderer.js
+  addAxes()      // renderer.js
+  bindControls() // ui.js
 
-  // Базовий рендер-цикл
+  // Базовий рендер-цикл (поки немає анімації маркера)
   function baseLoop() {
     controls.update()
     renderer.render(scene, camera)
@@ -32,81 +40,61 @@ function onStart() {
   // 1. Очищаємо попереднє повідомлення про помилку
   showError(null)
 
-  // 2. Зчитуємо параметри з форми — ui.js
+  // 2. Зчитуємо параметри з форми
   const params = readParams()
 
-  // 3. Валідація — physics.js
+  // 3. Валідація
   const error = validateParams(params)
   if (error) {
-    showError(error)  // НІ — показуємо помилку і зупиняємось
+    showError(error)
     return
   }
 
   // 4. Зберігаємо параметри у localStorage
   localStorage.setItem('sim_params', JSON.stringify(params))
 
-  // 5. Очищаємо попередню симуляцію
-  resetScene()
+  // 5. Зупиняємо попередню анімацію маркера (але НЕ видаляємо траєкторію!)
+  //    clearScene() тепер лише зупиняє requestAnimationFrame.
+  clearScene()
 
-  // 6. Обчислюємо масив точок траєкторії — physics.js
-  // computeDirection викликається всередині computeTrajectory3D
+  // 6. Обчислюємо масив точок балістичної траєкторії
   pointsArray = computeTrajectory3D(params)
 
-  // 7. Будуємо THREE.Line у сцені — renderer.js
+  // 7. Обчислюємо та відображаємо аналітичні показники
+  const analytics = computeAnalytics(params)
+  updateAnalyticsPanel(analytics)
+
+  // 8. Будуємо нову THREE.Line (додається до allTrajectories[])
   buildTrajectoryLine(pointsArray, params.color)
 
-  // 8. Створюємо сферу-маркер — renderer.js
+  // 9. Створюємо новий маркер (додається до allMarkers[])
   createMarker(params.x0, params.y0, params.z0)
 
-  // 9. Запускаємо анімаційний цикл — renderer.js
+  // 10. Запускаємо анімацію нового маркера
   animateMarker(pointsArray)
 }
 
-// ── onReset — обробник кнопки "Reset" ────────────────────────
+// ── onReset — скидає лише форму та інфо-панель ───────────────
 function onReset() {
-  resetScene()
   showError(null)
-
-  // Повертаємо інфо-панель до початкових значень
   const p = readParams()
-  updateInfoPanel({ t: 0, x: p.x0, y: p.y0, z: p.z0, v: p.v0 })
+  updateInfoPanel({ t: 0, x: p.x0, y: p.y0, z: p.z0, v: p.v0, vy: p.v0 * Math.sin(p.alpha * Math.PI / 180) })
+  updateAnalyticsPanel({ H: 0, R: 0, Tflight: 0 })
 }
 
-// ── resetScene() — очищення сцени і скидання стану ───────────
-/**
- * cancelAnimationFrame(animationId)
- * scene.remove(trajectoryLine)
- * scene.remove(markerSphere)
- * trajectoryLine = null
- * markerSphere   = null
- * currentIndex   = 0
- * pointsArray    = []
- * updateInfoPanel({ t:0, x:x0, y:y0, z:z0, v:v0 })
- */
-function resetScene() {
-  // Зупиняємо анімацію
-  if (animationId) {
-    cancelAnimationFrame(animationId)
-    animationId = null
-  }
-
-  // Видаляємо траєкторію зі сцени і звільняємо пам'ять GPU
-  if (trajectoryLine) {
-    scene.remove(trajectoryLine)
-    trajectoryLine.geometry.dispose()
-    trajectoryLine.material.dispose()
-    trajectoryLine = null
-  }
-
-  // Видаляємо маркер зі сцени і звільняємо пам'ять GPU
-  if (markerSphere) {
-    scene.remove(markerSphere)
-    markerSphere.geometry.dispose()
-    markerSphere.material.dispose()
-    markerSphere = null
-  }
-
-  // Скидаємо стан
+// ── onClearScene — видаляє ВСІ траєкторії та маркери зі сцени
+function onClearScene() {
+  clearAllTrajectories()  // renderer.js
+  showError(null)
+  updateInfoPanel({ t: 0, x: 0, y: 0, z: 0, v: 0, vy: 0 })
+  updateAnalyticsPanel({ H: 0, R: 0, Tflight: 0 })
   currentIndex = 0
-  pointsArray  = []
+  pointsArray = []
+}
+
+// ── resetScene() — залишено для зворотної сумісності ─────────
+function resetScene() {
+  clearScene()
+  currentIndex = 0
+  pointsArray = []
 }

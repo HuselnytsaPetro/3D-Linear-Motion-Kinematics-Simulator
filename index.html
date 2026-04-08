@@ -3,61 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Симулятор кінематики 3D</title>
+  <title>Симулятор балістичного руху 3D</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <canvas id="three-canvas"></canvas>
+
+  <!-- ── Панель параметрів ──────────────────────────────── -->
   <div id="controls-panel">
-    <h3>Параметри руху</h3>
+    <h3>Балістичний симулятор</h3>
+    <p class="panel-subtitle">Тіло кинуте під кутом до горизонту</p>
 
     <label>x₀ (м)</label>
-    <input id="inp-x0"    type="number" value="0"  step="1"/>
+    <input id="inp-x0"    type="number" value="0"    step="1"/>
 
     <label>y₀ (м)</label>
-    <input id="inp-y0"    type="number" value="0"  step="1"/>
+    <input id="inp-y0"    type="number" value="0"    step="1"/>
 
     <label>z₀ (м)</label>
-    <input id="inp-z0"    type="number" value="0"  step="1"/>
+    <input id="inp-z0"    type="number" value="0"    step="1"/>
 
-    <label>θ — азимут (°)</label>
-    <input id="inp-theta" type="number" value="45" step="1" min="0"   max="360"/>
+    <label>α — кут кидання до горизонту (°)</label>
+    <input id="inp-alpha" type="number" value="45"   step="1"   min="1"   max="89"/>
 
-    <label>φ — підйом (°)</label>
-    <input id="inp-phi"   type="number" value="30" step="1" min="-90" max="90"/>
+    <label>θ — азимут у площині XZ (°)</label>
+    <input id="inp-theta" type="number" value="0"    step="1"   min="0"   max="360"/>
 
     <label>v₀ (м/с)</label>
-    <input id="inp-v0"    type="number" value="20" step="1" min="0"/>
+    <input id="inp-v0"    type="number" value="30"   step="1"   min="1"   max="500"/>
 
-    <label>a (м/с²)</label>
-    <input id="inp-a"     type="number" value="2"  step="0.1"/>
-
-    <label>T (с)</label>
-    <input id="inp-T"     type="number" value="10" step="1" min="0.1"/>
+    <label>g — прискорення вільного падіння (м/с²)</label>
+    <input id="inp-g"     type="number" value="9.81" step="0.01" min="0.1" max="20"/>
 
     <label>Колір траєкторії</label>
     <input id="color-picker" type="color" value="#00aaff"/>
 
     <button id="btn-start">▶ Запустити</button>
-    <button id="btn-reset">↺ Reset</button>
+    <button id="btn-clear">🗑 Очистити сцену</button>
+    <button id="btn-reset">↺ Reset панелі</button>
 
     <div id="error-msg"></div>
   </div>
 
+  <!-- ── Аналітична панель (H, R, T_flight) ────────────── -->
+  <div id="analytics-panel">
+    <div class="analytics-title">Аналітичні показники</div>
+    <div class="info-row">
+      <span class="info-label" title="Максимальна висота польоту">H</span>
+      <span id="span-H">—</span> м
+    </div>
+    <div class="info-row">
+      <span class="info-label" title="Горизонтальна дальність польоту">R</span>
+      <span id="span-R">—</span> м
+    </div>
+    <div class="info-row">
+      <span class="info-label" title="Час польоту">T</span>
+      <span id="span-Tflight">—</span> с
+    </div>
+  </div>
+
+  <!-- ── Інфо-панель реального часу ───────────────────── -->
   <div id="info-panel">
     <div class="info-row"><span class="info-label">t</span><span id="span-t">0.00</span> с</div>
     <div class="info-row"><span class="info-label">x(t)</span><span id="span-x">0.000</span> м</div>
     <div class="info-row"><span class="info-label">y(t)</span><span id="span-y">0.000</span> м</div>
     <div class="info-row"><span class="info-label">z(t)</span><span id="span-z">0.000</span> м</div>
     <div class="info-row"><span class="info-label">v(t)</span><span id="span-v">0.000</span> м/с</div>
+    <div class="info-row"><span class="info-label">vᵧ(t)</span><span id="span-vy">0.000</span> м/с</div>
   </div>
 
   <script src="js/physics.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
-
 </body>
 </html>
