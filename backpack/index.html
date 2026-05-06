@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knapsack Simulator — Задача про рюкзак</title>
+    <meta name="description"
+        content="Інтерактивний симулятор задачі «0/1 Рюкзак» з 5 алгоритмами та покроковою анімацією DP-таблиці">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- ════════════════════════════════════════════════════════════ HEADER -->
+        <header class="app-header">
+            <h1 class="header-title">
+                <span class="icon"></span> Knapsack Simulator
+            </h1>
+            <p class="header-subtitle">
+                Задача «0/1 Рюкзак» ·
+                <span>5 алгоритмів</span> ·
+                ЛР №3.1 · ІПЗ-1 
+            </p>
+        </header>
+
+        <main class="app-main">
+
+            <!-- ═══════════════════════════════════════════════ CONTROLS SECTION -->
+            <section class="controls-section">
+
+                <!-- InputPanel -->
+                <div class="panel input-panel">
+                    <h2>📥 Вхідні дані</h2>
+
+                    <div class="form-group">
+                        <label for="inp-n">Кількість предметів (n)</label>
+                        <input type="number" id="inp-n" min="1" max="15" value="4" placeholder="1–15">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inp-W">Місткість рюкзака (W)</label>
+                        <input type="number" id="inp-W" min="1" max="50" value="10" placeholder="1–50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inp-weights">Ваги w[] (через кому)</label>
+                        <input type="text" id="inp-weights" value="2,3,4,5" placeholder="напр. 2,3,4,5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inp-values">Цінності v[] (через кому)</label>
+                        <input type="text" id="inp-values" value="3,4,5,8" placeholder="напр. 3,4,5,8">
+                    </div>
+                </div>
+
+                <!-- MethodSelector -->
+                <div class="panel method-panel">
+                    <h2>⚙️ Метод розв'язання</h2>
+
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="method" value="1">
+                            M1 · Brute Force (2ⁿ)
+                        </label>
+                        <label>
+                            <input type="radio" name="method" value="2">
+                            M2 · Recursive + Memo
+                        </label>
+                        <label>
+                            <input type="radio" name="method" value="3">
+                            M3 · Greedy (v/w)
+                        </label>
+                        <label class="featured">
+                            <input type="radio" name="method" value="4" checked>
+                            M4 · DP ★ (Dynamic Programming)
+                        </label>
+                        <label>
+                            <input type="radio" name="method" value="5">
+                            M5 · Branch &amp; Bound
+                        </label>
+                    </div>
+
+                    <div class="speed-control">
+                        <label for="speed-slider">Швидкість анімації DP</label>
+                        <input type="range" id="speed-slider" min="20" max="500" value="150" step="10">
+                        <span id="speed-label">150 мс/крок</span>
+                    </div>
+                </div>
+
+                <!-- ControlPanel -->
+                <div class="panel control-panel">
+                    <h2>🎮 Керування</h2>
+
+                    <div class="btn-group">
+                        <button id="btn-run" class="btn btn-primary">▶ Запустити</button>
+                        <button id="btn-reset" class="btn btn-secondary">↺ Скинути</button>
+                        <button id="btn-step-fwd" class="btn btn-control" disabled>→ Крок+</button>
+                        <button id="btn-step-bwd" class="btn btn-control" disabled>← Крок−</button>
+                        <button id="btn-pause" class="btn btn-control" disabled>⏸ Пауза</button>
+                    </div>
+
+                    <div id="anim-progress" class="anim-progress hidden">
+                        <span id="anim-step-label">Крок 0 / 0</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section><!-- /controls-section -->
+
+            <!-- ═══════════════════════════════════════════════════ DP TABLE SECTION -->
+            <section class="panel dp-section">
+                <h2>📊 Таблиця dp[i][w] — Dynamic Programming</h2>
+
+                <div class="dp-legend">
+                    <span class="legend-item legend-active">Активна комірка</span>
+                    <span class="legend-item legend-took">Предмет взятий</span>
+                    <span class="legend-item legend-optimal">Оптимальний шлях</span>
+                </div>
+
+                <div class="dp-table-wrapper" id="dp-table-wrapper">
+                    <p class="dp-placeholder">Натисніть «Запустити» для відображення таблиці</p>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════ RESULTS SECTION -->
+            <section class="results-section">
+
+                <!-- ResultPanel -->
+                <div class="panel result-panel">
+                    <h2>🏆 Результат</h2>
+                    <div id="result-content">
+                        <p class="placeholder-text">Результати з'являться після запуску</p>
+                    </div>
+                </div>
+
+                <!-- CompareTable -->
+                <div class="panel compare-panel">
+                    <h2>📈 Порівняння методів</h2>
+                    <div id="compare-content">
+                        <p class="placeholder-text">Порівняння з'явиться після запуску</p>
+                    </div>
+                </div>
+
+            </section><!-- /results-section -->
+
+        </main>
+
+    </div><!-- /app -->
+
+    <!-- Toast container (поза .app для z-index) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ─── Scripts (порядок важливий!) ───────────────────────────────────────── -->
+    <script src="js/solvers.js"></script>
+    <script src="js/animationManager.js"></script>
+    <script src="js/dataStore.js"></script>
+    <script src="js/uiController.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>
