@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ЛР 4 — Інтерполяція та МНК</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ── Header ──────────────────────────────────────────────────────────── -->
+    <header class="app-header">
+        <div class="header-glow"></div>
+        <div class="header-inner">
+            <div class="header-badge">ЛР №4</div>
+            <h1 class="header-title">Інтерполяція &amp; МНК</h1>
+            <p class="header-sub">Lagrange · Newton · Least Squares</p>
+        </div>
+    </header>
+
+    <!-- ── Main layout ─────────────────────────────────────────────────────── -->
+    <main class="app-main">
+
+        <!-- ── Left panel: controls ─────────────────────────────────────────── -->
+        <aside class="panel panel-controls">
+
+            <!-- Preset -->
+            <section class="ctrl-group">
+                <label class="ctrl-label">Пресет точок</label>
+                <select id="preset-select" class="ctrl-select">
+                    <option value="">— оберіть —</option>
+                    <option value="sin">sin(x) — 7 точок</option>
+                    <option value="poly">x² — 7 точок</option>
+                    <option value="exp">eˣ — 5 точок</option>
+                    <option value="custom">Довільні — 7 точок</option>
+                </select>
+            </section>
+
+            <!-- Points textarea -->
+            <section class="ctrl-group">
+                <label class="ctrl-label">Вузли (x, y — один на рядок)</label>
+                <textarea id="points-input" class="ctrl-textarea" rows="8"
+                    placeholder="0, 0&#10;1, 1&#10;2, 4"></textarea>
+            </section>
+
+            <!-- Algorithm -->
+            <section class="ctrl-group">
+                <label class="ctrl-label">Алгоритм</label>
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="algo" value="lagrange" checked />
+                        <span>Лагранж</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="algo" value="newton" />
+                        <span>Ньютон</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="algo" value="lsm" />
+                        <span>МНК</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Degree (LSM only) -->
+            <section class="ctrl-group" id="degree-row">
+                <label class="ctrl-label">Ступінь полінома МНК</label>
+                <div class="btn-group">
+                    <button class="btn-degree active" data-deg="2">2</button>
+                    <button class="btn-degree" data-deg="3">3</button>
+                    <button class="btn-degree" data-deg="4">4</button>
+                    <button class="btn-degree" data-deg="5">5</button>
+                </div>
+            </section>
+
+            <!-- Display mode -->
+            <section class="ctrl-group">
+                <label class="ctrl-label">Режим відображення</label>
+                <select id="display-mode" class="ctrl-select">
+                    <option value="interp">Лише інтерполяція</option>
+                    <option value="lsm">Лише МНК</option>
+                    <option value="all">Обидва</option>
+                </select>
+            </section>
+
+            <!-- Speed -->
+            <section class="ctrl-group">
+                <label class="ctrl-label">
+                    Швидкість анімації:
+                    <span id="speed-label" class="ctrl-value">500мс</span>
+                </label>
+                <input id="speed-slider" type="range" min="50" max="2000" value="500" step="50" class="ctrl-slider" />
+            </section>
+
+            <!-- Metrics -->
+            <section class="metrics-box">
+                <div class="metric" id="metric-nodes">Вузлів: —</div>
+                <div class="metric" id="metric-degree">Ступінь: —</div>
+                <div class="metric" id="metric-rmse">RMSE: —</div>
+                <div class="metric" id="metric-r2">R²: —</div>
+            </section>
+
+        </aside>
+
+        <!-- ── Center: charts ────────────────────────────────────────────────── -->
+        <section class="panel panel-chart">
+
+            <!-- Main chart -->
+            <div class="chart-wrapper" id="canvas-container">
+                <canvas id="main-canvas"></canvas>
+                <div id="chart-tooltip" class="chart-tooltip"></div>
+            </div>
+
+            <!-- Animation controls -->
+            <div class="anim-bar">
+                <div class="progress-track">
+                    <div class="progress-fill" id="anim-progress"></div>
+                </div>
+                <span class="progress-text" id="progress-label">Вузол 0 / 0</span>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btn-run">▶ ЗАПУСТИТИ</button>
+                <button class="btn btn-secondary" id="btn-pause" disabled>⏸ ПАУЗА</button>
+                <button class="btn btn-ghost" id="btn-step-back" disabled>◀ КРОК</button>
+                <button class="btn btn-ghost" id="btn-step-fwd" disabled>КРОК ▶</button>
+                <button class="btn btn-danger" id="btn-reset">⟳ СКИНУТИ</button>
+            </div>
+
+            <!-- Residuals chart -->
+            <div class="chart-label">Графік залишків (rᵢ = yᵢ − ŷᵢ)</div>
+            <div class="chart-wrapper chart-residuals">
+                <canvas id="residuals-canvas"></canvas>
+            </div>
+
+        </section>
+
+        <!-- ── Right panel: divided differences table ──────────────────────── -->
+        <aside class="panel panel-info" id="divdiffs-section" style="display:none">
+            <div class="ctrl-label" style="margin-bottom:8px">Таблиця розділених різниць</div>
+            <div id="divdiffs-table" class="divdiffs-scroll"></div>
+        </aside>
+
+    </main>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="interpolation.js"></script>
+    <script src="leastSquares.js"></script>
+    <script src="chartRenderer.js"></script>
+    <script src="animationManager.js"></script>
+    <script src="uiController.js"></script>
+    <script>
+        'use strict';
+        window.addEventListener('DOMContentLoaded', () => {
+            const mainCanvas = document.getElementById('main-canvas');
+            const residCanvas = document.getElementById('residuals-canvas');
+
+            const renderer = new ChartRenderer(mainCanvas, { padding: 60 });
+            const residRenderer = new ChartRenderer(residCanvas, { padding: 40 });
+            const animManager = new AnimationManager();
+
+            const ui = new UIController(renderer, residRenderer, animManager);
+
+            // Patch: show/hide divdiffs panel
+            const origUpdateDivDiffs = ui._updateDivDiffsTable.bind(ui);
+            ui._updateDivDiffsTable = function () {
+                const sec = document.getElementById('divdiffs-section');
+                origUpdateDivDiffs();
+                if (ui._algo === 'newton' && ui._newton) {
+                    sec.style.display = '';
+                } else {
+                    sec.style.display = 'none';
+                }
+            };
+
+            ui.init();
+        });
+    </script>
+</body>
+
+</html>
